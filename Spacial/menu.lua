@@ -8,7 +8,7 @@ local composer = require( "composer" )
 local scene = composer.newScene()
 
 local function gotoGame()
-	composer.gotoScene( "game" )
+	composer.gotoScene( "game", { time=800, effect="crossFade" } )
 end
 
 -- -----------------------------------------------------------------------------------

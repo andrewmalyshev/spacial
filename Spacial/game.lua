@@ -62,11 +62,20 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-  ship = display.newImageRect( mainGroup, "spaceShip.png", 35, 70)
-  ship.x = display.contentCenterX
-  ship.y = display.contentCenterY
-  physics.addBody(ship, "dynamic", {radius=70})
-  ship.myName = "ship"
+  -- Load the ship
+ ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
+ ship.x = display.contentCenterX
+ ship.y = display.contentCenterY + 200
+ physics.addBody(ship, "dynamic", {radius=17})
+ ship.myName = "ship"
+
+ -- Load planet
+ planet = display.newImageRect( mainGroup, "planetImage.png", 65, 65)
+ planet.x = display.contentCenterX
+ planet.y = display.contentCenterY
+ physics.addBody(planet, "static", {radius = 35})
+ planet.myName = "planet"
+
   background:addEventListener("touch", moveShipListener)
 end
 
