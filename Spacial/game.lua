@@ -7,6 +7,11 @@ local composer = require( "composer" )
 local scene = composer.newScene()
 local physics = require( "physics" )
 local needToMove = false
+-- Set Variables
+ _W = display.contentWidth; -- Get the width of the screen
+ _H = display.contentHeight; -- Get the height of the screen
+ motionx = 0; -- Variable used to move character along x axis
+ speed = 2; -- Set moving speed
 
 physics.start()
 physics.setGravity(0,0)
@@ -33,6 +38,42 @@ local function moveShipListener(event)
     end
     return true
 end
+
+-- Add left joystick button
+left = display.newImageRect("leftButton.png", 50, 50)
+left.x = 50
+left.y = 480
+
+-- Add right joystick button
+right = display.newImageRect("rightButton.png", 50, 50)
+right.x = _W - 50
+right.y = 480
+
+
+-- When left button is touched, move left
+ function left:touch()
+  motionx = -speed;
+ end
+
+-- When right button is touched, move right
+ function right:touch()
+  motionx = speed;
+ end
+
+-- Move ship
+ local function moveShip (event)
+  ship.x = ship.x + motionx;
+ end
+
+ -- Stop ship movement when no button is pushed
+ local function stop (event)
+  if event.phase =="ended" then
+   motionx = 0;
+  end
+ end
+
+
+
 
 
 -- -----------------------------------------------------------------------------------
@@ -76,7 +117,12 @@ function scene:create( event )
  physics.addBody(planet, "static", {radius = 35})
  planet.myName = "planet"
 
+
   background:addEventListener("touch", moveShipListener)
+  left:addEventListener("touch",left)
+  right:addEventListener("touch",right)
+  Runtime:addEventListener("enterFrame", moveShip)
+  Runtime:addEventListener("touch", stop )
 end
 
 
