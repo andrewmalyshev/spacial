@@ -10,26 +10,46 @@ local needToMove = false
 -- Set Variables
  _W = display.contentWidth; -- Get the width of the screen
  _H = display.contentHeight; -- Get the height of the screen
- motionx = 0; -- Variable used to move character along x axis
- speed = 2; -- Set moving speed
+ _MAX_FORCE = 0.0009
+ _FORCE_FACTOR = 0.0001
+-- motionx = 0; -- Variable used to move character along x axis
+--speed = 2; -- Set moving speed
 
 physics.start()
 physics.setGravity(0,0)
 
+local force = 0;
 local function moveShip( event )
-    ship:applyLinearImpulse( 0, -0.003, ship.x, ship.y )
-    print(ship.y)
+    force = force + _FORCE_FACTOR
+    if force >= _MAX_FORCE then
+      force = _MAX_FORCE
+    end
+
+    ship:rotate(side * 2)
+
+    local rotation = math.rad(ship.rotation)
+    local xPart = math.sin(rotation)
+    local yPart = math.cos(rotation)
+    print( "x: " .. xPart .. " y: " .. yPart )
+    ship:applyLinearImpulse( force * xPart, -force * yPart, ship.x, ship.y )
+    --print(ship.y)
 end
 
 local function handleEnterFrame( event )
     if ( needToMove == true ) then
-        moveShip()
+        moveShip( event )
     end
 end
 
 local function moveShipListener(event)
     local ship = event.target
     local phase = event.phase
+
+    if (event.x >= _W/2) then
+      side = 1
+    else
+      side = -1
+    end
 
     if ( "began" == phase ) then
         needToMove = true
@@ -38,43 +58,6 @@ local function moveShipListener(event)
     end
     return true
 end
-
--- Add left joystick button
-left = display.newImageRect("leftButton.png", 50, 50)
-left.x = 50
-left.y = 480
-
--- Add right joystick button
-right = display.newImageRect("rightButton.png", 50, 50)
-right.x = _W - 50
-right.y = 480
-
-
--- When left button is touched, move left
- function left:touch()
-  motionx = -speed;
- end
-
--- When right button is touched, move right
- function right:touch()
-  motionx = speed;
- end
-
--- Move ship
- local function moveShip (event)
-  ship.x = ship.x + motionx;
- end
-
- -- Stop ship movement when no button is pushed
- local function stop (event)
-  if event.phase =="ended" then
-   motionx = 0;
-  end
- end
-
-
-
-
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -104,25 +87,21 @@ function scene:create( event )
 	background.y = display.contentCenterY
 
   -- Load the ship
- ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
- ship.x = display.contentCenterX
- ship.y = display.contentCenterY + 200
- physics.addBody(ship, "dynamic", {radius=17})
- ship.myName = "ship"
+  ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
+  ship.x = display.contentCenterX
+  ship.y = display.contentCenterY + 200
+  physics.addBody(ship, "dynamic", {radius=17})
+  ship.myName = "ship"
 
  -- Load planet
- planet = display.newImageRect( mainGroup, "planetImage.png", 65, 65)
- planet.x = display.contentCenterX
- planet.y = display.contentCenterY
- physics.addBody(planet, "static", {radius = 35})
- planet.myName = "planet"
-
+  planet = display.newImageRect( mainGroup, "planetImage.png", 65, 65)
+  planet.x = display.contentCenterX
+  planet.y = display.contentCenterY
+  physics.addBody(planet, "static", {radius = 35})
+  planet.myName = "planet"
 
   background:addEventListener("touch", moveShipListener)
-  left:addEventListener("touch",left)
-  right:addEventListener("touch",right)
-  Runtime:addEventListener("enterFrame", moveShip)
-  Runtime:addEventListener("touch", stop )
+  Runtime:addEventListener("enterFrame", handleEnterFrame)
 end
 
 
