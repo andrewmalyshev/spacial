@@ -33,7 +33,7 @@ function ButtonCreator:createFromProperties(props)
 	-- eventHandler is a table with two event handling methods - onButtonDown
 	-- and onButtonUp
 	Button.eventHandler = props.eventHandler
-	
+
 	Button.display = displayButton
 
 	return Button
@@ -63,7 +63,7 @@ function onbuttonTouch(event)
 		display.currentStage:setFocus(button, event.id)
 		button.eventID = event.id
 		button.alpha = 1
-		
+
 		if(button.buttonParent.eventHandler) then
 			button.buttonParent.eventHandler:onButtonDown()
 		end
@@ -74,13 +74,13 @@ function onbuttonTouch(event)
 
 	-- If we are still here, then this is our event id and we handle event
 	if("moved" == phase) then
-		-- This is a button... It can't move. The only reason we do touch is 
+		-- This is a button... It can't move. The only reason we do touch is
 		-- for multitouch and press and hold
 	elseif("ended" == phase or "cancelled" == phase) then
 		display.currentStage:setFocus(button, nil)
 		button.eventID = nil
 		button.alpha = 0.5
-		
+
 		if(button.buttonParent.eventHandler) then
 			button.buttonParent.eventHandler:onButtonUp()
 		end

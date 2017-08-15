@@ -1,106 +1,23 @@
------------------------------------------------------------------------------------------
---
--- main.lua
---
------------------------------------------------------------------------------------------
 local composer = require( "composer" )
 local scene = composer.newScene()
 local physics = require( "physics" )
 system.activate( "multitouch" )
-
--- Set Variables
- _W = display.contentWidth; -- Get the width of the screen
- _H = display.contentHeight; -- Get the height of the screen
- _MAX_FORCE = 20
- _FORCE_FACTOR = 4
-
 physics.start()
 physics.setGravity(0,0)
 
--- VIRTUAL CONTROLLER CODE
+-- VIRTUAL JOYSTICK CONTROLLER CODE
 ----------------------------------------------------------------------------------------
--- This line brings in the controller which basically acts like a class
--- local factory = require("controller.virtual_controller_factory")
--- local controller = factory:newController()
---
--- local function setupController(displayGroup)
--- 	local jsProperties = {
--- 		nToCRatio = 0.5,
--- 		radius = 30,
--- 		x = display.contentWidth - 50,
--- 		y = display.contentHeight - 10,
--- 		restingXValue = 0,
--- 		restingYValue = 0,
--- 		rangeX = 600,
--- 		rangeY = 600,
--- 		touchHandler = {
--- 			onTouch = moveShip
--- 		}
--- 	}
--- 	local jsName = "js"
--- 	js = controller:addJoystick(jsName, jsProperties)
--- 	controller:displayController(displayGroup)
--- end
---
--- function moveShip(self, x, y)
--- 	ship:setLinearVelocity(x, y)
--- end
+local controller = require("controller.joystick.setup_joystick")
+controller:createController()
 ----------------------------------------------------------------------------------------
--- END VIRTUAL CONTROLLER CODE
+-- END VIRTUAL JOYSTICK CONTROLLER CODE
 
--- -----------------------------------------------------------------------------------
--- Ship control
--- -----------------------------------------------------------------------------------
-local force = 0
-local side = 0
-local needToMove = false
-local touchCount = 0
-
-local function moveShip( event )
-    force = force + _FORCE_FACTOR
-    if force >= _MAX_FORCE then
-      force = _MAX_FORCE
-    end
-
-    ship:rotate(side * 2)
-
-    local rotation = math.rad(ship.rotation)
-    local xPart = math.sin(rotation)
-    local yPart = math.cos(rotation)
-    print( "x: " .. xPart .. " y: " .. yPart )
-    -- ship:applyLinearImpulse( force * xPart, -force * yPart, ship.x, ship.y )
-    ship:applyForce(force * xPart, -force * yPart, ship.x, ship.y)
-end
-
-local function handleEnterFrame( event )
-    if ( needToMove == true ) then
-        moveShip( event )
-    end
-end
-
-local function moveShipListener(event)
-    local ship = event.target
-    local phase = event.phase
-
-    if (event.x >= _W/2) then
-      side = 1
-    else
-      side = -1
-    end
-
-    if ( "began" == phase ) then
-        needToMove = true
-        touchCount = touchCount + 1
-    elseif ( "ended" == phase or "cancelled" == phase ) then
-        needToMove = false
-        force = 0
-        touchCount = touchCount - 1
-    end
-
-    if (touchCount >= 2) then side = 0 end
-
-    return true
-  end
+-- TOUCHSCREEN CONTROLLER CODE
+----------------------------------------------------------------------------------------
+-- local controller = require("controller.touchscreen.touch_controller")
+-- controller:createController()
+----------------------------------------------------------------------------------------
+-- END TOUCHSCREEN CONTROLLER CODE
 
 -- -----------------------------------------------------------------------------------
 -- Gravity
@@ -149,7 +66,7 @@ function scene:create( event )
 	sceneGroup:insert( uiGroup )    -- Insert into the scene's view group
 
 
-  -- setupController(uiGroup)
+  controller:setupController(uiGroup)
 	-- Load the background
 	background = display.newImageRect( backGroup, "spaceBackground.png", 1080, 1920)
 	background.x = display.contentCenterX
@@ -177,8 +94,8 @@ function scene:create( event )
   field.collision = collideWithField
   field:addEventListener( "collision" )
 
-  background:addEventListener("touch", moveShipListener)
-  Runtime:addEventListener("enterFrame", handleEnterFrame)
+  -- background:addEventListener("touch", moveShipListener)
+  -- Runtime:addEventListener("enterFrame", handleEnterFrame)
 end
 
 
@@ -194,7 +111,7 @@ function scene:show( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
-    Runtime:addEventListener( "enterFrame", handleEnterFrame )
+    -- Runtime:addEventListener( "enterFrame", handleEnterFrame )
 	end
 end
 

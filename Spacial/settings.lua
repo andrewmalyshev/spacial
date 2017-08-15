@@ -1,19 +1,5 @@
------------------------------------------------------------------------------------------
---
--- menu.lua
---
------------------------------------------------------------------------------------------
-
 local composer = require( "composer" )
 local scene = composer.newScene()
-
-local function gotoGame()
-	composer.gotoScene( "game", { time=800, effect="crossFade" } )
-end
-
-local function gotoSettings()
-	composer.gotoScene( "settings", { time=800, effect="crossFade" } )
-end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -27,15 +13,6 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local startButton = display.newImageRect( sceneGroup, "startButton.png", 200, 50 )
-	startButton.x = display.contentCenterX
-	startButton.y = display.contentCenterY
-	startButton:addEventListener( "tap", gotoGame )
-
-	local settingsButton = display.newImageRect( sceneGroup, "settingsButton.png", 40, 40 )
-	settingsButton.x = 280
-	settingsButton.y = 0
-	settingsButton:addEventListener( "tap", gotoSettings )
 end
 
 -- show()
