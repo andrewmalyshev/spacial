@@ -14,50 +14,85 @@ local needToMove = false
  _FORCE_FACTOR = 0.0001
 -- motionx = 0; -- Variable used to move character along x axis
 --speed = 2; -- Set moving speed
-
 physics.start()
 physics.setGravity(0,0)
 
-local force = 0;
-local function moveShip( event )
-    force = force + _FORCE_FACTOR
-    if force >= _MAX_FORCE then
-      force = _MAX_FORCE
-    end
+-- VIRTUAL CONTROLLER CODE
+----------------------------------------------------------------------------------------
+-- This line brings in the controller which basically acts like a class
+local factory = require("controller.virtual_controller_factory")
+local controller = factory:newController()
 
-    ship:rotate(side * 2)
-
-    local rotation = math.rad(ship.rotation)
-    local xPart = math.sin(rotation)
-    local yPart = math.cos(rotation)
-    print( "x: " .. xPart .. " y: " .. yPart )
-    ship:applyLinearImpulse( force * xPart, -force * yPart, ship.x, ship.y )
-    --print(ship.y)
+local function setupController(displayGroup)
+	local jsProperties = {
+		nToCRatio = 0.5,
+		radius = 30,
+		x = display.contentWidth - 50,
+		y = display.contentHeight - 10,
+		restingXValue = 0,
+		restingYValue = 0,
+		rangeX = 600,
+		rangeY = 600,
+		touchHandler = {
+			onTouch = moveShip
+		}
+	}
+	local jsName = "js"
+	js = controller:addJoystick(jsName, jsProperties)
+	controller:displayController(displayGroup)
 end
 
-local function handleEnterFrame( event )
-    if ( needToMove == true ) then
-        moveShip( event )
-    end
+local ship
+
+function moveShip(self, x, y)
+	ship:setLinearVelocity(x, y)
 end
 
-local function moveShipListener(event)
-    local ship = event.target
-    local phase = event.phase
+----------------------------------------------------------------------------------------
+-- END VIRTUAL CONTROLLER CODE
 
-    if (event.x >= _W/2) then
-      side = 1
-    else
-      side = -1
-    end
 
-    if ( "began" == phase ) then
-        needToMove = true
-    elseif ( "ended" == phase or "cancelled" == phase ) then
-        needToMove = false
-    end
-    return true
-end
+
+-- local force = 0;
+-- local function moveShip( event )
+--     force = force + _FORCE_FACTOR
+--     if force >= _MAX_FORCE then
+--       force = _MAX_FORCE
+--     end
+--
+--     ship:rotate(side * 2)
+--
+--     local rotation = math.rad(ship.rotation)
+--     local xPart = math.sin(rotation)
+--     local yPart = math.cos(rotation)
+--     print( "x: " .. xPart .. " y: " .. yPart )
+--     ship:applyLinearImpulse( force * xPart, -force * yPart, ship.x, ship.y )
+--     --print(ship.y)
+-- end
+--
+-- local function handleEnterFrame( event )
+--     if ( needToMove == true ) then
+--         moveShip( event )
+--     end
+-- end
+--
+-- local function moveShipListener(event)
+--     local ship = event.target
+--     local phase = event.phase
+--
+--     if (event.x >= _W/2) then
+--       side = 1
+--     else
+--       side = -1
+--     end
+--
+--     if ( "began" == phase ) then
+--         needToMove = true
+--     elseif ( "ended" == phase or "cancelled" == phase ) then
+--         needToMove = false
+--     end
+--     return true
+-- end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -81,6 +116,8 @@ function scene:create( event )
 	uiGroup = display.newGroup()    -- Display group for UI objects like the score
 	sceneGroup:insert( uiGroup )    -- Insert into the scene's view group
 
+
+  setupController(uiGroup)
 	-- Load the background
 	background = display.newImageRect( backGroup, "spaceBackground.png", 1080, 1920)
 	background.x = display.contentCenterX
@@ -90,7 +127,7 @@ function scene:create( event )
   ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
   ship.x = display.contentCenterX
   ship.y = display.contentCenterY + 200
-  physics.addBody(ship, "dynamic", {radius=17})
+  physics.addBody(ship, {radius=17, isSensor = true})
   ship.myName = "ship"
 
  -- Load planet
@@ -100,8 +137,8 @@ function scene:create( event )
   physics.addBody(planet, "static", {radius = 35})
   planet.myName = "planet"
 
-  background:addEventListener("touch", moveShipListener)
-  Runtime:addEventListener("enterFrame", handleEnterFrame)
+  -- background:addEventListener("touch", moveShipListener)
+  -- Runtime:addEventListener("enterFrame", handleEnterFrame)
 end
 
 
@@ -117,7 +154,7 @@ function scene:show( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
-    Runtime:addEventListener( "enterFrame", handleEnterFrame )
+    -- Runtime:addEventListener( "enterFrame", handleEnterFrame )
 	end
 end
 
@@ -135,7 +172,7 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		physics.pause()
-    Runtime:removeEventListener( "enterFrame", handleEnterFrame )
+    -- Runtime:removeEventListener( "enterFrame", handleEnterFrame )
 		composer.removeScene( "game" )
 	end
 end
@@ -146,7 +183,7 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
-
+  controller = nil
 end
 -- -----------------------------------------------------------------------------------
 -- Scene event function listeners
