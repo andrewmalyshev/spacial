@@ -11,8 +11,8 @@ system.activate( "multitouch" )
 -- Set Variables
  _W = display.contentWidth; -- Get the width of the screen
  _H = display.contentHeight; -- Get the height of the screen
- _MAX_FORCE = 0.04
- _FORCE_FACTOR = 0.005
+ _MAX_FORCE = 20
+ _FORCE_FACTOR = 4
 
 physics.start()
 physics.setGravity(0,0)
@@ -48,6 +48,9 @@ physics.setGravity(0,0)
 ----------------------------------------------------------------------------------------
 -- END VIRTUAL CONTROLLER CODE
 
+-- -----------------------------------------------------------------------------------
+-- Ship control
+-- -----------------------------------------------------------------------------------
 local force = 0
 local side = 0
 local needToMove = false
@@ -100,6 +103,30 @@ local function moveShipListener(event)
   end
 
 -- -----------------------------------------------------------------------------------
+-- Gravity
+-- -----------------------------------------------------------------------------------
+local function collideWithField( self, event )
+    local objectToPull = event.other
+
+    if ( event.phase == "began" and objectToPull.touchJoint == nil ) then
+        -- Create touch joint after short delay (10 milliseconds)
+        timer.performWithDelay( 10,
+            function()
+                -- Create touch joint
+                objectToPull.touchJoint = physics.newJoint( "touch", objectToPull, objectToPull.x, objectToPull.y )
+                -- Set physical properties of touch joint
+                objectToPull.touchJoint.frequency = fieldPower
+                objectToPull.touchJoint.dampingRatio = 0.0
+                -- Set touch joint "target" to center of field
+                objectToPull.touchJoint:setTarget( self.x, self.y )
+            end
+        )
+    elseif ( event.phase == "ended" and objectToPull.touchJoint ~= nil ) then
+        objectToPull.touchJoint:removeSelf()
+        objectToPull.touchJoint = nil
+    end
+end
+-- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
 
@@ -132,15 +159,23 @@ function scene:create( event )
   ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
   ship.x = display.contentCenterX
   ship.y = display.contentCenterY + 200
-  physics.addBody(ship,  "dynamic", {radius=17})
+  physics.addBody(ship,  "dynamic", {radius=17, density = 10})
   ship.myName = "ship"
 
  -- Load planet
   planet = display.newImageRect( mainGroup, "planetImage.png", 65, 65)
   planet.x = display.contentCenterX
   planet.y = display.contentCenterY
-  physics.addBody(planet, "static", {radius = 35})
+  physics.addBody(planet, "static", {radius = 32})
   planet.myName = "planet"
+
+  fieldPower = 0.2
+  field = display.newCircle(mainGroup, planet.x, planet.y, 100)
+  field.alpha = 0.2
+  -- Add physical body (sensor) to field
+  physics.addBody( field, "static", { isSensor=true, radius=fieldRadius } )
+  field.collision = collideWithField
+  field:addEventListener( "collision" )
 
   background:addEventListener("touch", moveShipListener)
   Runtime:addEventListener("enterFrame", handleEnterFrame)
