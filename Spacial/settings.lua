@@ -1,6 +1,12 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
+local function gotoMenu()
+	composer.gotoScene( "menu" )
+end
 local widget = require( "widget" )
+controllerType = "Touchscreen"
+
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -10,27 +16,38 @@ local widget = require( "widget" )
 function scene:create( event )
 	local sceneGroup = self.view
 
+
 	local background = display.newImageRect( sceneGroup, "spaceBackground.png", 1080, 1920 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
+	local menuButton = display.newImageRect( sceneGroup, "menuButton.png", 102, 35 )
+	menuButton.x = 60
+	menuButton.y = 0
+	menuButton:addEventListener( "tap", gotoMenu )
 
-	local statusText = display.newText( "Interact with a Widget...\n", 0, 385, 190, 0, native.systemFont, 14 )
+	local statusText = display.newText( "Select type of control...\n", 0, 385, 190, 0, native.systemFont, 14 )
 	statusText:setFillColor( 1,1 )
 	statusText.anchorX = 0
 	statusText.x = 100
 	sceneGroup:insert( statusText )
 
-
 	local function radioSwitchListener( event )
-		statusText.text = event.target.id .. "\nswitch.isOn = " .. tostring( event.target.isOn )
+		if (event.target.id == "JoystickButton") then
+			controllerType = "Joystick"
+		elseif (event.target.id == "TouchscreenButton") then
+			controllerType = "Touchscreen"
+		end
+		statusText.text = (event.target.id .. "\ncontroller is on" )
 	end
+
+
 
 	local radioButton1 = widget.newSwitch {
 	    left = 25,
 	    top = 180,
 	    style = "radio",
-	    id = "Radio Switch 1",
+	    id = "JoystickButton",
 	    initialSwitchState = true,
 	    onPress = radioSwitchListener,
 	}
@@ -45,7 +62,7 @@ function scene:create( event )
 	    left = 55,
 	    top = 180,
 	    style = "radio",
-	    id = "Radio Switch 2",
+	    id = "TouchscreenButton",
 	    onPress = radioSwitchListener,
 	}
 	local radioButtonText = display.newText( "Touchscreen", 140, 250, native.systemFont, 16 )

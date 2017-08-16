@@ -5,10 +5,12 @@ system.activate( "multitouch" )
 physics.start()
 physics.setGravity(0,0)
 
+
+
 -- VIRTUAL JOYSTICK CONTROLLER CODE
 ----------------------------------------------------------------------------------------
-local controller = require("controller.joystick.setup_joystick")
-controller:createController()
+-- local controller = require("controller.joystick.setup_joystick")
+-- controller:createController()
 ----------------------------------------------------------------------------------------
 -- END VIRTUAL JOYSTICK CONTROLLER CODE
 
@@ -65,12 +67,22 @@ function scene:create( event )
 	uiGroup = display.newGroup()    -- Display group for UI objects like the score
 	sceneGroup:insert( uiGroup )    -- Insert into the scene's view group
 
-
-  controller:setupController(uiGroup)
 	-- Load the background
 	background = display.newImageRect( backGroup, "spaceBackground.png", 1080, 1920)
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
+
+  -- Load controllers
+  if(controllerType == "Joystick") then
+    local controller = require("controller.joystick.setup_joystick")
+    controller:createController()
+    controller:setupController(uiGroup)
+  elseif (controllerType == "Touchscreen") then
+    local controller = require("controller.touchscreen.touch_controller")
+    controller:createController()
+    background:addEventListener("touch", moveShipListener)
+    Runtime:addEventListener("enterFrame", handleEnterFrame)
+  end
 
   -- Load the ship
   ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
@@ -94,8 +106,6 @@ function scene:create( event )
   field.collision = collideWithField
   field:addEventListener( "collision" )
 
-  -- background:addEventListener("touch", moveShipListener)
-  -- Runtime:addEventListener("enterFrame", handleEnterFrame)
 end
 
 
@@ -111,7 +121,9 @@ function scene:show( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
-    -- Runtime:addEventListener( "enterFrame", handleEnterFrame )
+    if (controllerType == "Touchscreen") then
+      Runtime:addEventListener( "enterFrame", handleEnterFrame )
+    end
 	end
 end
 
@@ -129,8 +141,10 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		physics.pause()
-    Runtime:removeEventListener( "enterFrame", handleEnterFrame )
 		composer.removeScene( "game" )
+    if (controllerType == "Touchscreen") then
+      Runtime:removeEventListener( "enterFrame", handleEnterFrame )
+    end
 	end
 end
 
