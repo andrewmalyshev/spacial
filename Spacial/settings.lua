@@ -1,5 +1,6 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
+local widget = require( "widget" )
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -12,6 +13,47 @@ function scene:create( event )
 	local background = display.newImageRect( sceneGroup, "spaceBackground.png", 1080, 1920 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
+
+
+	local statusText = display.newText( "Interact with a Widget...\n", 0, 385, 190, 0, native.systemFont, 14 )
+	statusText:setFillColor( 1,1 )
+	statusText.anchorX = 0
+	statusText.x = 100
+	sceneGroup:insert( statusText )
+
+
+	local function radioSwitchListener( event )
+		statusText.text = event.target.id .. "\nswitch.isOn = " .. tostring( event.target.isOn )
+	end
+
+	local radioButton1 = widget.newSwitch {
+	    left = 25,
+	    top = 180,
+	    style = "radio",
+	    id = "Radio Switch 1",
+	    initialSwitchState = true,
+	    onPress = radioSwitchListener,
+	}
+	local radioButtonText = display.newText( "Joystick", 120, 200, native.systemFont, 16 )
+	radioButtonText:setFillColor( 1,1 )
+	sceneGroup:insert( radioButtonText )
+	sceneGroup:insert( radioButton1 )
+	radioButton1.x = 70
+	radioButton1.y = 200
+
+	local radioButton2 = widget.newSwitch {
+	    left = 55,
+	    top = 180,
+	    style = "radio",
+	    id = "Radio Switch 2",
+	    onPress = radioSwitchListener,
+	}
+	local radioButtonText = display.newText( "Touchscreen", 140, 250, native.systemFont, 16 )
+	radioButtonText:setFillColor( 1,1 )
+	sceneGroup:insert( radioButtonText )
+	sceneGroup:insert( radioButton2 )
+	radioButton2.x = 70
+	radioButton2.y = 250
 
 end
 
