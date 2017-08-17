@@ -5,8 +5,6 @@ system.activate( "multitouch" )
 physics.start()
 physics.setGravity(0,0)
 
-
-
 -- VIRTUAL JOYSTICK CONTROLLER CODE
 ----------------------------------------------------------------------------------------
 -- local controller = require("controller.joystick.setup_joystick")
@@ -21,30 +19,7 @@ physics.setGravity(0,0)
 ----------------------------------------------------------------------------------------
 -- END TOUCHSCREEN CONTROLLER CODE
 
--- -----------------------------------------------------------------------------------
--- Gravity
--- -----------------------------------------------------------------------------------
-local function collideWithField( self, event )
-    local objectToPull = event.other
 
-    if ( event.phase == "began" and objectToPull.touchJoint == nil ) then
-        -- Create touch joint after short delay (10 milliseconds)
-        timer.performWithDelay( 10,
-            function()
-                -- Create touch joint
-                objectToPull.touchJoint = physics.newJoint( "touch", objectToPull, objectToPull.x, objectToPull.y )
-                -- Set physical properties of touch joint
-                objectToPull.touchJoint.frequency = fieldPower
-                objectToPull.touchJoint.dampingRatio = 0.0
-                -- Set touch joint "target" to center of field
-                objectToPull.touchJoint:setTarget( self.x, self.y )
-            end
-        )
-    elseif ( event.phase == "ended" and objectToPull.touchJoint ~= nil ) then
-        objectToPull.touchJoint:removeSelf()
-        objectToPull.touchJoint = nil
-    end
-end
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -92,19 +67,8 @@ function scene:create( event )
   ship.myName = "ship"
 
  -- Load planet
-  planet = display.newImageRect( mainGroup, "planetImage.png", 65, 65)
-  planet.x = display.contentCenterX
-  planet.y = display.contentCenterY
-  physics.addBody(planet, "static", {radius = 32})
-  planet.myName = "planet"
-
-  fieldPower = 0.2
-  field = display.newCircle(mainGroup, planet.x, planet.y, 100)
-  field.alpha = 0.2
-  -- Add physical body (sensor) to field
-  physics.addBody( field, "static", { isSensor=true, radius=fieldRadius } )
-  field.collision = collideWithField
-  field:addEventListener( "collision" )
+  require("spaceobjects.planet")
+  planet = Planet:new(display.contentCenterX, display.contentCenterY)
 
 end
 
