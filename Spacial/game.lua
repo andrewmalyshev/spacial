@@ -1,25 +1,13 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
 local physics = require( "physics" )
+
+local perspective = require("perspective")
+camera = perspective.createView()
+
 system.activate( "multitouch" )
 physics.start()
 physics.setGravity(0,0)
-
--- VIRTUAL JOYSTICK CONTROLLER CODE
-----------------------------------------------------------------------------------------
--- local controller = require("controller.joystick.setup_joystick")
--- controller:createController()
-----------------------------------------------------------------------------------------
--- END VIRTUAL JOYSTICK CONTROLLER CODE
-
--- TOUCHSCREEN CONTROLLER CODE
-----------------------------------------------------------------------------------------
--- local controller = require("controller.touchscreen.touch_controller")
--- controller:createController()
-----------------------------------------------------------------------------------------
--- END TOUCHSCREEN CONTROLLER CODE
-
-
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -36,8 +24,11 @@ function scene:create( event )
 	backGroup = display.newGroup()  -- Display group for the background image
 	sceneGroup:insert( backGroup )  -- Insert into the scene's view group
 
-	mainGroup = display.newGroup()  -- Display group for the ship, planets, etc.
-	sceneGroup:insert( mainGroup )  -- Insert into the scene's view group
+  mainGroup = display.newGroup()  -- Display group for all objects except ship
+  sceneGroup:insert( mainGroup )
+
+	shipGroup = display.newGroup()  -- Display group for the ship
+	sceneGroup:insert( shipGroup )  -- Insert into the scene's view group
 
 	uiGroup = display.newGroup()    -- Display group for UI objects like the score
 	sceneGroup:insert( uiGroup )    -- Insert into the scene's view group
@@ -46,6 +37,7 @@ function scene:create( event )
 	background = display.newImageRect( backGroup, "spaceBackground.png", 1080, 1920)
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
+  camera:add(background)
 
   -- Load controllers
   if(controllerType == "Joystick") then
@@ -56,22 +48,25 @@ function scene:create( event )
     local controller = require("controller.touchscreen.touch_controller")
     controller:createController()
     background:addEventListener("touch", moveShipListener)
-    Runtime:addEventListener("enterFrame", handleEnterFrame)
+    Runtime:addEventListener("enterFrame", handleTouchEnterFrame)
   end
 
   -- Load the ship
-  ship = display.newImageRect( mainGroup, "spaceShip.png", 17, 35)
+  ship = display.newImageRect( shipGroup, "spaceShip.png", 17, 35)
   ship.x = display.contentCenterX
-  ship.y = display.contentCenterY + 200
+  ship.y = display.contentCenterY
   physics.addBody(ship,  "dynamic", {radius=17, density = 10})
   ship.myName = "ship"
-
+  camera:add(ship)
+  camera:setFocus(ship)
+  camera:track()
+  -- camera:track(ship)
  -- Load planet
   require("spaceobjects.planet")
-  planet = Planet:new(display.contentCenterX, display.contentCenterY)
-
+  planet = Planet:new(display.contentCenterX, display.contentCenterY - 200)
+  camera:add(planet.visualPlanet)
+  camera:add(planet.field)
 end
-
 
 -- show()
 function scene:show( event )
@@ -86,7 +81,7 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
     if (controllerType == "Touchscreen") then
-      Runtime:addEventListener( "enterFrame", handleEnterFrame )
+      Runtime:addEventListener( "enterFrame", handleTouchEnterFrame )
     end
 	end
 end
@@ -107,7 +102,7 @@ function scene:hide( event )
 		physics.pause()
 		composer.removeScene( "game" )
     if (controllerType == "Touchscreen") then
-      Runtime:removeEventListener( "enterFrame", handleEnterFrame )
+      Runtime:removeEventListener( "enterFrame", handleTouchEnterFrame )
     end
 	end
 end

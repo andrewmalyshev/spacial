@@ -2,9 +2,9 @@ Planet = {}
 Planet.__index = Planet
 
 local defaultSize = 65
-local fieldPower = 0.2
-local fieldDamping = 0.4
-local fieldRadius = defaultSize * 2
+local fieldPower = 0.15
+local fieldDamping = 0.3
+local fieldRadius = defaultSize * 1.5
 
 function Planet:new(aX, aY)
   local newPlanet = {}
@@ -14,7 +14,6 @@ function Planet:new(aX, aY)
   newPlanet.visualPlanet.x = aX
   newPlanet.visualPlanet.y = aY
   physics.addBody( newPlanet.visualPlanet, "static", {radius = defaultSize / 2})
-
   newPlanet.field = display.newCircle(mainGroup, aX, aY, fieldRadius)
   newPlanet.field.alpha = 0.2
   -- Add physical body (sensor) to field

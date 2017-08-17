@@ -23,10 +23,11 @@ function moveShip( event )
     local yPart = math.cos(rotation)
     print( "x: " .. xPart .. " y: " .. yPart )
     -- ship:applyLinearImpulse( force * xPart, -force * yPart, ship.x, ship.y )
+
     ship:applyForce(force * xPart, -force * yPart, ship.x, ship.y)
 end
 
-function handleEnterFrame( event )
+function handleTouchEnterFrame( event )
     if ( needToMove == true ) then
         moveShip( event )
     end
